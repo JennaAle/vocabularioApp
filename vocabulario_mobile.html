@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Aprende vocabulario — Móvil (ES/EN/DE/FR/ZH)</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#141c2b;--muted:#a9b4c0;--text:#e9eef5;--accent:#7dd3fc;--accent2:#a78bfa;--border:rgba(255,255,255,.08)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0b1220,#0e1726);color:var(--text);font:17px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;padding-bottom:calc(env(safe-area-inset-bottom) + 70px)}
+    .wrap{max-width:680px;margin:0 auto;padding:14px}
+    h1{font-size:24px;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+    /* Tarjetas */
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);margin:10px 0}
+    .card h2{font-size:16px;margin:0;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .card .content{padding:12px}
+
+    /* Inputs */
+    label{display:block;margin:8px 0 6px;color:#cbd5e1;font-weight:600}
+    input[type="range"],select,input[type="number"],input[type="text"],textarea{width:100%}
+    select,input[type="number"],input[type="text"]{padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f172a;color:var(--text)}
+    textarea{min-height:260px;border-radius:12px;border:1px solid rgba(255,255,255,.12);padding:12px;background:#0f172a;color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+    /* Utilidades */
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .row.stretch > *{flex:1 1 120px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#0f172a;border:1px solid rgba(255,255,255,.14);font-size:12px;color:#cbd5e1}
+    .kbd{padding:2px 6px;border-radius:6px;background:#0f172a;border:1px solid rgba(255,255,255,.1);font-family:ui-monospace,monospace;font-size:12px}
+
+    /* Botones */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.12);padding:12px 14px;border-radius:12px;background:#111827;color:var(--text);cursor:pointer;user-select:none;transition:transform .04s ease, background .2s;min-height:48px}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0b1220;border:none;font-weight:800}
+    .btn.block{display:flex;width:100%}
+
+    /* Display superior (solo destino) */
+    .bigBox{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px;padding:16px;border-radius:16px;background:#0f172a;border:1px solid rgba(255,255,255,.08)}
+    .bigZh{font-size:clamp(36px,10vw,92px);font-weight:800;letter-spacing:.02em;text-align:center;line-height:1.1;word-break:break-word}
+
+    /* Progreso */
+    .progress{height:10px;background:#0e1422;border-radius:999px;margin-top:10px;position:relative;overflow:hidden}
+    .bar{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+
+    /* Sticky action bar (móvil) */
+    .stickyBar{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:rgba(10,14,23,.85);backdrop-filter:blur(8px);border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .stickyBar .btn{min-height:52px}
+
+    /* Details (Ajustes avanzados) */
+    details summary{cursor:pointer;list-style:none}
+    details summary::-webkit-details-marker{display:none}
+    details summary .chev{transition:transform .2s ease}
+    details[open] summary .chev{transform:rotate(90deg)}
+
+    /* Autotest */
+    details#autotests{margin:12px 0}
+    details#autotests pre{background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;white-space:pre-wrap}
+
+    @media (min-width:700px){
+      .stickyBar{grid-template-columns:.8fr 1.2fr .8fr;left:50%;transform:translateX(-50%);max-width:680px;border-radius:16px 16px 0 0}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>
+      Aprende vocabulario <span class="pill" id="pairPill">ES → ZH 加油</span>
+    </h1>
+
+    <section class="card" id="topDisplay">
+      <div class="content">
+        <div class="bigBox"><div id="bigDst" class="bigZh">—</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Lista de estudio</h2>
+      <div class="content">
+        <p class="muted">Formato: una entrada por línea separada por <b>tabulador</b> (<span class="kbd">A\tB</span>). A=origen, B=destino. Carga tu fichero con “Cargar .TXT”.</p>
+        <div class="row stretch" style="margin-bottom:8px">
+          <button id="demo" class="btn">Cargar demo (40)</button>
+          <button id="shuffle" class="btn">Barajar</button>
+          <button id="clear" class="btn">Vaciar</button>
+        </div>
+        <input id="fileTxt" type="file" accept=".txt" hidden>
+        <button id="loadTxt" class="btn block" style="margin-bottom:8px">📄 Cargar .TXT</button>
+        <textarea id="list" placeholder="español\t中文\nlibro\t书 ..."></textarea>
+        <div class="row" style="margin-top:8px">
+          <span class="pill" id="count">0 términos</span>
+          <span class="pill" id="studied">0 estudiados</span>
+          <span class="pill" id="timerDisplay">⏱ 00:00</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>
+        <details>
+          <summary class="row" style="align-items:center;gap:8px">
+            <span class="chev">▶</span>
+            <span>Ajustes avanzados</span>
+          </summary>
+          <div class="content">
+            <div class="row">
+              <div style="flex:1">
+                <label for="langA">Idioma A (origen)</label>
+                <select id="langA">
+                  <option value="ES">Español (ES)</option>
+                  <option value="EN">Inglés (EN)</option>
+                  <option value="DE">Alemán (DE)</option>
+                  <option value="FR">Francés (FR)</option>
+                  <option value="ZH">Chino (ZH)</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:flex-end"><button id="swap" class="btn" title="Intercambiar">⇄</button></div>
+              <div style="flex:1">
+                <label for="langB">Idioma B (destino)</label>
+                <select id="langB">
+                  <option value="ZH">Chino (ZH)</option>
+                  <option value="EN">Inglés (EN)</option>
+                  <option value="DE">Alemán (DE)</option>
+                  <option value="FR">Francés (FR)</option>
+                  <option value="ES">Español (ES)</option>
+                </select>
+              </div>
+            </div>
+
+            <label for="voiceA">Voz (A)</label>
+            <select id="voiceA"></select>
+            <label for="voiceB">Voz (B)</label>
+            <select id="voiceB"></select>
+
+            <div class="row">
+              <div style="flex:1">
+                <label for="rate">Velocidad</label>
+                <input id="rate" type="range" min="0.7" max="1.2" step="0.05" value="1" />
+              </div>
+              <div style="flex:1">
+                <label for="pauseAfterA">Pausa tras A (ms)</label>
+                <input id="pauseAfterA" type="number" value="400" min="0" step="100" />
+              </div>
+              <div style="flex:1">
+                <label for="pauseAfterB">Pausa para repetir (ms)</label>
+                <input id="pauseAfterB" type="number" value="1600" min="200" step="100" />
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:8px">
+              <div style="flex:1">
+                <label for="studyMinutes">Tiempo de estudio (min)</label>
+                <input id="studyMinutes" type="number" min="1" step="1" value="25" />
+              </div>
+              <div style="display:flex; align-items:flex-end; gap:8px">
+                <button id="timerToggle" class="btn">⏱ Iniciar temporizador</button>
+                <button id="timerReset" class="btn">Reiniciar</button>
+              </div>
+            </div>
+
+            <div class="progress"><div class="bar" id="bar"></div></div>
+            <p class="muted" id="status">Listo.</p>
+          </div>
+        </details>
+      </h2>
+    </section>
+
+    <details id="autotests">
+      <summary>Autotests</summary>
+      <div class="content">
+        <pre id="testOutput">Ejecutando pruebas…</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- Sticky controls siempre visibles para el pulgar -->
+  <div class="stickyBar" role="toolbar" aria-label="Controles principales">
+    <button id="prev" class="btn" title="Anterior">⏮</button>
+    <button id="play" class="btn primary" title="Reproducir lección">▶️ Reproducir</button>
+    <button id="next" class="btn" title="Siguiente">⏭</button>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+  // ===== Constantes =====
+  const NL='\n', TAB='\t';
+
+  // ===== DOM =====
+  const listEl = document.getElementById('list');
+  const countEl = document.getElementById('count');
+  const studiedEl = document.getElementById('studied');
+  const statusEl = document.getElementById('status');
+  const barEl = document.getElementById('bar');
+  const bigDstEl = document.getElementById('bigDst');
+  const testOutput = document.getElementById('testOutput');
+  const pairPill = document.getElementById('pairPill');
+
+  const langAEl = document.getElementById('langA');
+  const langBEl = document.getElementById('langB');
+  const swapBtn = document.getElementById('swap');
+
+  const voiceAEl = document.getElementById('voiceA');
+  const voiceBEl = document.getElementById('voiceB');
+
+  const rateEl = document.getElementById('rate');
+  const pauseAfterAEl = document.getElementById('pauseAfterA');
+  const pauseAfterBEl = document.getElementById('pauseAfterB');
+
+  const btnPlay = document.getElementById('play');
+  const btnNext = document.getElementById('next');
+  const btnPrev = document.getElementById('prev');
+  const btnDemo = document.getElementById('demo');
+  const btnShuffle = document.getElementById('shuffle');
+  const btnClear = document.getElementById('clear');
+
+  const studyMinEl = document.getElementById('studyMinutes');
+  const timerToggleBtn = document.getElementById('timerToggle');
+  const timerResetBtn = document.getElementById('timerReset');
+  const timerDisplayEl = document.getElementById('timerDisplay');
+
+  const fileTxtEl = document.getElementById('fileTxt');
+  const btnLoadTxt = document.getElementById('loadTxt');
+
+  // ===== Estado =====
+  let voices = [];
+  let items = []; // {a,b}
+  let index = 0;
+  let studied = new Set();
+  let playing = false;
+  let timerRunning=false, timerEndAt=0, timerId=null;
+
+  // ===== Utilidades =====
+  const isHtmlLike = (s)=> /<\/?[a-z][^>]*>/i.test(s);
+  const isNoiseLine = (s)=> /^(pantalla grande|vista previa de la lista|se actualiza automáticamente|这些|—|--+|==+)/i.test(s);
+
+  function updatePairPill(){
+    const A = langAEl.value, B = langBEl.value;
+    pairPill.textContent = `${A} → ${B}${B==='ZH'?' 加油':''}`;
+  }
+
+  // ===== Speech API =====
+  const synth = (typeof window!=='undefined' && 'speechSynthesis' in window) ? window.speechSynthesis : null;
+  const hasSpeech = ()=> !!synth && typeof synth.speak==='function';
+
+  function candidatesFor(code){
+    switch(code){
+      case 'ES': return (v)=> /^es/i.test(v.lang);
+      case 'EN': return (v)=> /^en/i.test(v.lang);
+      case 'DE': return (v)=> /^de/i.test(v.lang);
+      case 'FR': return (v)=> /^fr/i.test(v.lang);
+      case 'ZH': return (v)=> /(zh|cmn|yue)/i.test(v.lang);
+      default: return ()=> true;
+    }
+  }
+
+  function fillVoices(select, filterFn, fallback){
+    const prev = select.value;
+    select.innerHTML='';
+    const arr = voices.filter(filterFn);
+    if(arr.length===0){
+      const opt=document.createElement('option'); opt.value=''; opt.textContent=`No hay voces ${fallback}`; select.appendChild(opt); select.disabled=true; return;
+    }
+    select.disabled=false;
+    arr.forEach(v=>{ const opt=document.createElement('option'); opt.value=v.name; opt.textContent=`${v.name} [${v.lang}]`; select.appendChild(opt); });
+    if(prev) select.value=prev;
+    if(!select.value && arr[0]) select.value=arr[0].name;
+  }
+
+  function populateVoicesForLangs(){
+    if(!hasSpeech()){
+      [voiceAEl, voiceBEl].forEach(sel=>{ sel.innerHTML='<option value="">Voces no disponibles</option>'; sel.disabled=true; });
+      statusEl.textContent='Modo sin voz: tu navegador no soporta síntesis de voz. Aun así, puedes estudiar leyendo en pantalla.';
+      return;
+    }
+    voices = synth.getVoices();
+    fillVoices(voiceAEl, candidatesFor(langAEl.value), langAEl.value);
+    fillVoices(voiceBEl, candidatesFor(langBEl.value), langBEl.value);
+  }
+
+  if(hasSpeech()) synth.onvoiceschanged = populateVoicesForLangs;
+
+  // ===== Parsing =====
+  function getItemsFromTextarea(){
+    const normalized = (listEl.value||'').replace(/\uFEFF/g,'').replace(/\r\n?/g,'\n');
+    const lines = normalized.split(/\n+/);
+    const out=[];
+    for(let raw of lines){
+      if(!raw) continue; let l=String(raw).trim(); if(!l || isHtmlLike(l) || isNoiseLine(l)) continue;
+      let parts = l.split(/\t+/); if(parts.length<2) parts = l.split(/\s{2,}/);
+      const a=(parts[0]??'').trim(), b=(parts[1]??'').trim();
+      if(!a && !b) continue; out.push({a,b});
+    }
+    return out;
+  }
+
+  function toTSVFromText(raw){
+    const normalized=(raw||'').replace(/\uFEFF/g,'').replace(/\r\n?/g,'\n');
+    const lines=normalized.split(/\n+/); const out=[];
+    for(let line of lines){
+      if(!line) continue; line=line.trim(); if(!line || isHtmlLike(line) || isNoiseLine(line)) continue;
+      if(/^#\s*[^\n]*?(Español|English|Deutsch|Français|中文)/i.test(line)) continue; // cabeceras
+      let parts=line.split(/\t+/).map(s=>s.trim());
+      if(parts.length>=3 && (/^#?\d+$/.test(parts[0])||parts[0]==='#')){ const a=parts[1]||'', b=parts[2]||''; if(a||b) out.push(`${a}\t${b}`); continue; }
+      if(parts.length>=2){ out.push(`${parts[0]}\t${parts[1]}`); continue; }
+      parts=line.split(/\s{2,}/).map(s=>s.trim());
+      if(parts.length>=2){ out.push(`${parts[0]}\t${parts[1]}`); continue; }
+      if(line){ out.push(`${line}\t`); }
+    }
+    return out.join('\n');
+  }
+
+  function render(){
+    items = getItemsFromTextarea();
+    countEl.textContent = `${items.length} término${items.length===1?'':'s'}`;
+    updateProgress(); showCurrentLarge(); updateStudiedPill(); updatePairPill();
+  }
+
+  function updateProgress(){ const p=items.length?(index/items.length)*100:0; barEl.style.width=p+'%'; }
+  function updateStudiedPill(){ const n=studied.size||0; studiedEl.textContent=`${n} estudiado${n===1?'':'s'}`; }
+
+  // ===== Temporizador =====
+  function formatMMSS(ms){ const t=Math.max(0,Math.floor(ms/1000)); const m=Math.floor(t/60), s=t%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+  function updateTimerDisplay(){ const remaining=timerRunning?(timerEndAt-Date.now()):0; timerDisplayEl.textContent=`⏱ ${formatMMSS(remaining)}`; }
+  function stopTimer(silent){ timerRunning=false; if(timerId){clearInterval(timerId); timerId=null;} updateTimerDisplay(); if(!silent) timerToggleBtn.textContent='⏱ Iniciar temporizador'; }
+  function handleTimerEnd(){ stopTimer(true); timerToggleBtn.textContent='⏱ Iniciar temporizador'; statusEl.textContent='⏰ Tiempo de estudio terminado.'; try{beep(2,880,140,130);}catch(e){} if(playing){ playing=false; if(hasSpeech()) synth.cancel(); } }
+  function startTimer(mins){ const ms=Math.max(1,Math.floor(mins*60000)); timerEndAt=Date.now()+ms; timerRunning=true; timerToggleBtn.textContent='⏹ Detener temporizador'; if(timerId){clearInterval(timerId);} updateTimerDisplay(); timerId=setInterval(()=>{ const rem=timerEndAt-Date.now(); if(rem<=0){handleTimerEnd();return;} updateTimerDisplay(); },250); }
+
+  // ===== Reproducción =====
+  function showCurrentLarge(){ const it=items[index]; bigDstEl.textContent=(it&&it.b)?it.b:'—'; }
+  function speak(text, voiceName, rate){ return new Promise(res=>{ if(!hasSpeech()){ return setTimeout(res,0);} const u=new SpeechSynthesisUtterance(text); const v=voices.find(v=>v.name===voiceName); if(v) u.voice=v; u.rate=rate||1; u.onend=()=>res(); u.onerror=()=>res(); synth.speak(u); }); }
+  function pause(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  async function sayCurrent(jumpOnly=false){ const it=items[index]; if(!it) return; showCurrentLarge(); if(jumpOnly && hasSpeech()) synth.cancel(); const rate=parseFloat(rateEl.value)||1; const pA=+pauseAfterAEl.value||0; const pB=+pauseAfterBEl.value||1000; if(it.a) await speak(it.a, voiceAEl.value, rate); await pause(pA); if(it.b) await speak(it.b, voiceBEl.value, rate); await pause(pB); studied.add(index); updateStudiedPill(); updateTimerDisplay(); }
+
+  // ===== Listeners =====
+  listEl.addEventListener('input', ()=>{ index=0; studied.clear(); updateStudiedPill(); render(); });
+  btnShuffle.addEventListener('click', ()=>{ const arr=getItemsFromTextarea(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } listEl.value=arr.map(it=>`${it.a}${TAB}${it.b}`).join(NL); index=0; studied.clear(); updateStudiedPill(); render(); });
+  btnClear.addEventListener('click', ()=>{ listEl.value=''; index=0; studied.clear(); updateStudiedPill(); render(); });
+
+  btnLoadTxt.addEventListener('click', ()=> fileTxtEl.click());
+  fileTxtEl.addEventListener('change', async (e)=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ const raw=await f.text(); const tsv=toTSVFromText(raw); listEl.value=tsv; index=0; studied.clear(); updateStudiedPill(); render(); statusEl.textContent=`Importado: ${f.name}`; }catch(err){ console.error(err); alert('No se pudo leer el archivo .TXT'); } finally{ fileTxtEl.value=''; } });
+
+  btnDemo.addEventListener('click', ()=>{ const demo=[ ['hacer fila','排队'],['libra esterlina','英镑'],['yuan (renminbi)','人民币'],['el pueblo; la gente','人民'], ['consultar; comprobar','查'],['desde; a partir de','从'],['otra vez (ya ocurrió)','又'],['jugar; pasar el rato','玩儿'], ['muy; muchísimo','非常'],['vez','次'],['hotel','宾馆'],['habitación','房间'],['visitar (un lugar)','参观'], ['Guerreros de Terracota','兵马俑'],['soldado','兵'],['aperitivo; comida callejera','小吃'],['postal','明信片'], ['carta','信'],['allí','那儿'],['dependiente/a','营业员'],['abrir (negocio); estar abierto','营业'], ['firmar (poner la firma)','签字'],['contar; número','数'],['Xi’an','西安'],['creer; pensar; sentir','觉得'], ['desarrollo; desarrollar','发展'],['construir','建'],['rascacielos y grandes edificios','高楼大厦'],['paisaje nocturno','夜景'], ['centro comercial','商场'],['cosas; objetos','东西'],['suéter','毛衣'],['falda','裙子'],['tan; así de','这么'], ['mandarín estándar','普通话'],['común; normal','普通'],['fluido','流利'],['frase','句'],['entender','懂'],['dialecto de Shanghái','上海话'] ]; listEl.value=demo.map(r=>r.join(TAB)).join(NL); index=0; studied.clear(); updateStudiedPill(); render(); });
+
+  btnPrev.addEventListener('click', ()=>{ if(index>0){ index--; updateProgress(); sayCurrent(true);} });
+  btnNext.addEventListener('click', ()=>{ if(index<items.length-1){ index++; updateProgress(); sayCurrent(true);} });
+
+  btnPlay.addEventListener('click', async ()=>{ if(playing){return;} if(items.length===0){ render(); if(items.length===0){ alert('Añade al menos una línea A\\tB.'); return; } } playing=true; index=Math.min(index,items.length-1); statusEl.textContent=hasSpeech()? 'Reproduciendo…':'Simulando reproducción (sin voz)…'; for(; index<items.length && playing; index++){ await sayCurrent(); updateProgress(); } playing=false; statusEl.textContent='Listo.'; });
+
+  // Idiomas (swap y cambios)
+  function onLangChange(){ updatePairPill(); populateVoicesForLangs(); }
+  langAEl?.addEventListener('change', onLangChange);
+  langBEl?.addEventListener('change', onLangChange);
+  swapBtn?.addEventListener('click', ()=>{ const a=langAEl.value; langAEl.value=langBEl.value; langBEl.value=a; onLangChange(); });
+
+  // Temporizador
+  timerToggleBtn?.addEventListener('click', ()=>{ if(!timerRunning){ const mins=Math.max(0,parseFloat(studyMinEl.value)||0); startTimer(mins); statusEl.textContent=`Temporizador iniciado (${mins} min).`; } else { stopTimer(false); statusEl.textContent='Temporizador detenido.'; } });
+  timerResetBtn?.addEventListener('click', ()=>{ stopTimer(true); timerEndAt=0; timerDisplayEl.textContent='⏱ 00:00'; statusEl.textContent='Temporizador reiniciado.'; });
+  studyMinEl?.addEventListener('change', ()=>{ if(timerRunning){ const mins=Math.max(0,parseFloat(studyMinEl.value)||0); startTimer(mins);} });
+
+  // Beep
+  let _ac=null; function beep(times=2,freq=880,duration=140,gap=130){ try{ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; _ac=_ac||new AC(); const start=_ac.currentTime+0.02; for(let i=0;i<times;i++){ const osc=_ac.createOscillator(); const gain=_ac.createGain(); osc.type='sine'; osc.frequency.value=freq; osc.connect(gain); gain.connect(_ac.destination); const t0=start+i*((duration+gap)/1000); const t1=t0+duration/1000; gain.gain.setValueAtTime(0.0001,t0); gain.gain.exponentialRampToValueAtTime(0.25,t0+0.02); gain.gain.exponentialRampToValueAtTime(0.0001,t1); osc.start(t0); osc.stop(t1+0.01);} }catch(e){} }
+
+  // ===== Autotests (idénticos a la versión escritorio) =====
+  function runTests(){
+    const logs=[]; const assert=(cond,msg)=>{ logs.push((cond?'✅ ':'❌ ')+msg); if(!cond) console.error('Test fail:',msg); };
+
+    // T1: Parsing LF/CRLF y pares A\tB
+    (function(){ const sample='hola'+TAB+'你好'+NL+'que tal'+TAB+'怎么样'+'\r\n'+'libro'+TAB+'书'; const s=sample.replace(/\\r\\n/g,'\r\n'); listEl.value=s; const p=getItemsFromTextarea(); assert(p.length===3,'Divide por líneas Windows/Unix'); assert(p[0].a==='hola' && p[0].b==='你好','Parsea A y B correctamente'); assert(p[2].b==='书','Última entrada correcta'); })();
+
+    // T2: Ignora líneas vacías y recorta
+    (function(){ listEl.value=' a '+TAB+' 啊 '+NL+NL+' b '+TAB+' 哦'+NL; const p=getItemsFromTextarea(); assert(p.length===2,'Ignora líneas vacías'); assert(p[0].a==='a' && p[0].b==='啊','Recorte (1)'); assert(p[1].a==='b' && p[1].b==='哦','Recorte (2)'); })();
+
+    // T3: Barajar conserva tamaño
+    (function(){ const before=getItemsFromTextarea().map(it=>it.a+TAB+it.b).join(NL); btnShuffle.click(); const after=getItemsFromTextarea().map(it=>it.a+TAB+it.b).join(NL); assert(before.split(NL).length===after.split(NL).length,'Barajar conserva número de líneas'); })();
+
+    // T4: CSV en memoria con cabecera a,b
+    (function(){ const rows=[["a","b"],...getItemsFromTextarea().map(it=>[it.a,it.b])]; const csv=rows.map(r=>r.map(x=>`"${(x||'').replace(/"/g,'""')}"`).join(',')).join(NL); assert(/^\"a\",\"b\"/.test(csv),'CSV incluye cabecera'); assert(csv.split(NL).length>=1,'CSV sin error'); })();
+
+    // T5: No cuenta línea vacía final
+    (function(){ listEl.value='uno'+TAB+'一'+NL+'dos'+TAB+'二'+NL; const p=getItemsFromTextarea(); assert(p.length===2,'Ignora salto final'); })();
+
+    // T6: formatMMSS
+    (function(){ const a=formatMMSS(0), b=formatMMSS(59000), c=formatMMSS(61000); assert(a==='00:00','formatMMSS(0)'); assert(b==='00:59','formatMMSS(59s)'); assert(c==='01:01','formatMMSS(61s)'); })();
+
+    // T7: Línea solo-A y solo-B
+    (function(){ listEl.value='soloA'+NL+TAB+'onlyB'+NL+'ok'+TAB+'好'; const p=getItemsFromTextarea(); assert(p.length===3,'Parser acepta solo-A y solo-B'); const txt=p.map(it=>`${it.a}${TAB}${it.b}`).join(NL); assert(/ok\t好/.test(txt),'Join robusto'); })();
+
+    // T8: Demo carga 40
+    (function(){ btnDemo.click(); const p=getItemsFromTextarea(); assert(p.length===40,'Demo 40 términos'); })();
+
+    // T9: Importación con índice y cabecera
+    (function(){ const raw='#\tEspañol\t中文'+NL+'1\tclaro (color)\t浅'+NL+'2\tponer\t放'+NL+'soloES'; const tsv=toTSVFromText(raw.replace(/\\t/g,'\t')); const lines=tsv.split(NL); assert(lines.length===3,'TXT→TSV: 3 válidas'); assert(lines[0]==='claro (color)\t浅' && lines[1]==='poner\t放' && lines[2]==='soloES\t','Conversión correcta'); })();
+
+    // T10: Beep existe
+    (function(){ assert(typeof beep==='function','beep() existe'); })();
+
+    testOutput.textContent=logs.join(NL);
+  }
+
+  // Inicial (mobile-first)
+  // Nota: iOS sólo permite síntesis tras gesto del usuario. La acción "Reproducir" sirve como gesto.
+  updatePairPill(); if(hasSpeech()) populateVoicesForLangs(); render(); updateTimerDisplay(); runTests();
+})();
+</script>
+</body>
+</html>
